@@ -1,0 +1,12 @@
+## Interface: 16001
+## Title: Narco-Tips
+## Notes: Bloc-notes persistant avec ouverture auto en capitale
+## Author: Vincent
+## Version: 0.1.0-dev
+## SavedVariables: NarcoTipsDB
+
+# Load order
+Init.lua
+Core.lua
+Notepad.lua
+Minimap.lua
