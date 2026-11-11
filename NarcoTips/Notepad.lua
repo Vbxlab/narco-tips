@@ -4,6 +4,7 @@
 function NarcoTips:InitNotepad()
     local db = self.db
     local fontSize = db.fontSize or 14
+    local fontPath = "Fonts\\FRIZQT__.TTF"
 
     -- === Main window ===
     local frame = CreateFrame("Frame", "NarcoTipsNotepad", UIParent)
@@ -50,7 +51,7 @@ function NarcoTips:InitNotepad()
 
     -- === Preset buttons bar ===
     local presetBar = CreateFrame("Frame", nil, frame)
-    presetBar:SetHeight(22)
+    presetBar:SetHeight(24)
     presetBar:SetPoint("TOPLEFT", frame, "TOPLEFT", 6, -28)
     presetBar:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -28)
 
@@ -68,29 +69,49 @@ function NarcoTips:InitNotepad()
         px = px + 56
     end
 
-    -- Font size slider (compact)
-    local fontLabel = presetBar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    fontLabel:SetPoint("RIGHT", presetBar, "RIGHT", -2, 0)
-    fontLabel:SetText("Aa")
+    -- Font size: - and + buttons (no slider template dependency)
+    local fontMinus = CreateFrame("Button", nil, presetBar, "UIPanelButtonTemplate")
+    fontMinus:SetSize(20, 20)
+    fontMinus:SetPoint("RIGHT", presetBar, "RIGHT", -2, 0)
+    fontMinus:SetText("-")
 
-    local fontSlider = CreateFrame("Slider", nil, presetBar, "OptionsSliderTemplate")
-    fontSlider:SetPoint("RIGHT", fontLabel, "LEFT", -4, 0)
-    fontSlider:SetSize(80, 16)
-    fontSlider:SetMinMaxValues(10, 22)
-    fontSlider:SetValueStep(1)
-    fontSlider:SetValue(fontSize)
-    fontSlider:SetScript("OnValueChanged", function(self, value)
-        NarcoTips.db.fontSize = math.floor(value)
-        NarcoTips:UpdateFontSize()
-        NarcoTips:Save()
+    local fontDisplay = presetBar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    fontDisplay:SetPoint("RIGHT", fontMinus, "LEFT", -2, 0)
+    fontDisplay:SetText(tostring(fontSize))
+
+    local fontPlus = CreateFrame("Button", nil, presetBar, "UIPanelButtonTemplate")
+    fontPlus:SetSize(20, 20)
+    fontPlus:SetPoint("RIGHT", fontDisplay, "LEFT", -2, 0)
+    fontPlus:SetText("+")
+
+    local function UpdateFontDisplay()
+        fontDisplay:SetText(tostring(self.db.fontSize or 14))
+    end
+
+    fontPlus:SetScript("OnClick", function()
+        local s = (self.db.fontSize or 14) + 1
+        if s > 22 then s = 22 end
+        self.db.fontSize = s
+        self:UpdateFontSize()
+        UpdateFontDisplay()
+        self:Save()
+    end)
+
+    fontMinus:SetScript("OnClick", function()
+        local s = (self.db.fontSize or 14) - 1
+        if s < 10 then s = 10 end
+        self.db.fontSize = s
+        self:UpdateFontSize()
+        UpdateFontDisplay()
+        self:Save()
     end)
 
     -- === Input field (add new item) ===
     local input = CreateFrame("EditBox", "NarcoTipsInput", frame)
     input:SetHeight(24)
-    input:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -54)
-    input:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -8, -54)
-    input:SetFontObject("ChatFontNormal")
+    input:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -56)
+    input:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -8, -56)
+    input:SetFont(fontPath, fontSize)
     input:SetAutoFocus(false)
     input:SetMaxLetters(120)
     input:EnableMouse(true)
@@ -101,21 +122,39 @@ function NarcoTips:InitNotepad()
     inputBg:SetColorTexture(0.12, 0.12, 0.16, 1.0)
 
     local inputBorder = input:CreateTexture(nil, "BORDER")
-    inputBorder:SetPoint("TOPLEFT", -1, 1)
-    inputBorder:SetPoint("BOTTOMRIGHT", 1, -1)
+    inputBorder:SetPoint("TOPLEFT", input, "TOPLEFT", -1, 1)
+    inputBorder:SetPoint("BOTTOMRIGHT", input, "BOTTOMRIGHT", 1, -1)
     inputBorder:SetColorTexture(0.25, 0.20, 0.40, 0.5)
 
     input:SetTextInsets(6, 6, 2, 2)
+    input:SetText("")
     input:SetScript("OnEnterPressed", function(self)
         local text = self:GetText()
         if text and text ~= "" then
-            NarcoTips:AddItem(text)
+            local presetKey = self.pendingPreset or "misc"
+            -- Strip the prefix from the text if it matches
+            local prefix = ""
+            for _, p in ipairs(NarcoTips.presets) do
+                if p.key == presetKey then prefix = p.prefix end
+            end
+            local cleanText = text
+            if prefix ~= "" then
+                local prefixLen = #prefix
+                if text:sub(1, prefixLen) == prefix then
+                    cleanText = text:sub(prefixLen + 1)
+                end
+            end
+            if cleanText ~= "" then
+                NarcoTips:AddItem(cleanText, presetKey)
+            end
             self:SetText("")
+            self.pendingPreset = nil
             self:ClearFocus()
         end
     end)
     input:SetScript("OnEscapePressed", function(self)
         self:SetText("")
+        self.pendingPreset = nil
         self:ClearFocus()
     end)
 
@@ -130,14 +169,18 @@ function NarcoTips:InitNotepad()
 
     -- === Scroll list ===
     local scroll = CreateFrame("ScrollFrame", "NarcoTipsScroll", frame, "UIPanelScrollFrameTemplate")
-    scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -84)
-    scroll:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -28, -84)
+    scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -86)
+    scroll:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -28, -86)
     scroll:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 8, 36)
     scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -28, 36)
 
     local content = CreateFrame("Frame", "NarcoTipsContent", scroll)
     content:SetSize(scroll:GetWidth(), 1)
     scroll:SetScrollChild(content)
+
+    scroll:SetScript("OnSizeChanged", function()
+        content:SetWidth(scroll:GetWidth())
+    end)
 
     -- === Bottom action bar ===
     local bottomBar = CreateFrame("Frame", nil, frame)
@@ -195,14 +238,75 @@ function NarcoTips:InitNotepad()
     local rows = {}
     local ROW_HEIGHT = 28
 
+    -- Safe C_Timer check
+    local function SafeTimer(delay, func)
+        if C_Timer and C_Timer.After then
+            C_Timer.After(delay, func)
+        else
+            -- Fallback: use OnUpdate timer
+            local t = CreateFrame("Frame")
+            local elapsed = 0
+            t:SetScript("OnUpdate", function(self, delta)
+                elapsed = elapsed + delta
+                if elapsed >= delay then
+                    func()
+                    self:SetScript("OnUpdate", nil)
+                end
+            end)
+        end
+    end
+
+    -- Create a custom checkbox (no template dependency)
+    local function CreateCheckbox(parent)
+        local cb = CreateFrame("Button", nil, parent)
+        cb:SetSize(18, 18)
+
+        local tex = cb:CreateTexture(nil, "BACKGROUND")
+        tex:SetAllPoints()
+
+        -- Unchecked state
+        tex:SetTexture("Interface\\Buttons\\UI-CheckBox-Up")
+        cb.uncheckedTex = tex
+
+        -- Checked overlay
+        local checkTex = cb:CreateTexture(nil, "OVERLAY")
+        checkTex:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+        checkTex:SetAllPoints()
+        checkTex:Hide()
+        cb.checkTex = checkTex
+
+        cb.SetChecked = function(self, checked)
+            if checked then
+                tex:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+                checkTex:Show()
+            else
+                tex:SetTexture("Interface\\Buttons\\UI-CheckBox-Up")
+                checkTex:Hide()
+            end
+            cb.checkedState = checked
+        end
+
+        cb.GetChecked = function(self)
+            return self.checkedState
+        end
+
+        cb:SetScript("OnClick", function(self)
+            self:SetChecked(not self.checkedState)
+        end)
+
+        -- Initialize unchecked
+        cb:SetChecked(false)
+
+        return cb
+    end
+
     local function CreateRow(idx)
         local row = CreateFrame("Frame", nil, content)
         row:SetHeight(ROW_HEIGHT)
 
-        -- Checkbox
-        local check = CreateFrame("CheckButton", nil, row, "ChatConfigCheckButtonTemplate")
+        -- Custom checkbox
+        local check = CreateCheckbox(row)
         check:SetPoint("LEFT", row, "LEFT", 4, 0)
-        check:SetSize(20, 20)
 
         -- Timestamp
         local time = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
@@ -217,13 +321,18 @@ function NarcoTips:InitNotepad()
         text:SetJustifyH("LEFT")
         text:SetWordWrap(true)
 
-        -- Delete button
+        -- Delete button (simple red X)
         local del = CreateFrame("Button", nil, row)
         del:SetSize(18, 18)
         del:SetPoint("RIGHT", row, "RIGHT", -2, 0)
-        del:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")
-        del:SetHighlightTexture("Interface\\Buttons\\UI-MinusButton-Highlight")
-        del:SetPushedTexture("Interface\\Buttons\\UI-MinusButton-Down")
+
+        local delTex = del:CreateTexture(nil, "NORMAL")
+        delTex:SetTexture("Interface\\Buttons\\UI-MinusButton-Up")
+        delTex:SetAllPoints()
+
+        local delHighlight = del:CreateTexture(nil, "HIGHLIGHT")
+        delHighlight:SetTexture("Interface\\Buttons\\UI-MinusButton-Highlight")
+        delHighlight:SetAllPoints()
 
         row.check = check
         row.time = time
@@ -235,7 +344,7 @@ function NarcoTips:InitNotepad()
     -- === Flash save indicator ===
     local function FlashSaved()
         saveIndicator:SetText("|cFF4CAF50Sauvegardé ✓|r")
-        C_Timer.After(1.5, function()
+        SafeTimer(1.5, function()
             saveIndicator:SetText("")
         end)
     end
@@ -290,15 +399,18 @@ function NarcoTips:InitNotepad()
                 end
             end
 
-            local displayText = color .. prefix .. item.text .. "|r"
+            local displayText
             if item.checked then
                 displayText = "|cFF666666" .. prefix .. item.text .. "|r"
+            else
+                displayText = color .. prefix .. item.text .. "|r"
             end
             row.text:SetText(displayText)
+            row.text:SetFont(fontPath, self.db.fontSize or 14)
 
             -- Checkbox handler
-            row.check:SetScript("OnClick", function(self)
-                item.checked = self:GetChecked()
+            row.check:SetScript("OnClick", function()
+                item.checked = not item.checked
                 NarcoTips:Save()
                 NarcoTips:RefreshList()
                 FlashSaved()
@@ -340,51 +452,17 @@ function NarcoTips:InitNotepad()
 
     -- Add item from preset (prompt for text via input field)
     function NarcoTips:AddItemFromPreset(preset)
-        -- Focus the input and pre-fill with preset prefix
         input:SetText(preset.prefix)
         input:SetFocus()
         input:HighlightText(0, 0)
         input:SetCursorPosition(#preset.prefix)
-
-        -- Store pending preset for when Enter is pressed
         input.pendingPreset = preset.key
     end
-
-    -- Override input EnterPressed to handle presets
-    local originalOnEnterPressed = input:GetScript("OnEnterPressed")
-    input:SetScript("OnEnterPressed", function(self)
-        local text = self:GetText()
-        if text and text ~= "" then
-            local presetKey = self.pendingPreset or "misc"
-            -- Strip the prefix from the text if it matches
-            local preset = nil
-            for _, p in ipairs(NarcoTips.presets) do
-                if p.key == presetKey then preset = p end
-            end
-            local cleanText = text
-            if preset and preset.prefix ~= "" then
-                -- Check if text starts with the prefix
-                local prefixLen = #preset.prefix
-                if text:sub(1, prefixLen) == preset.prefix then
-                    cleanText = text:sub(prefixLen + 1)
-                end
-            end
-            if cleanText ~= "" then
-                NarcoTips:AddItem(cleanText, presetKey)
-            end
-            self:SetText("")
-            self.pendingPreset = nil
-            self:ClearFocus()
-        end
-    end)
 
     -- === Font size control ===
     function NarcoTips:UpdateFontSize()
         local size = self.db.fontSize or 14
-        local fontPath = "Fonts\\FRIZQT__.TTF"
-        -- Update input font
         input:SetFont(fontPath, size)
-        -- Update all row texts
         for _, row in ipairs(rows) do
             if row:IsShown() then
                 row.text:SetFont(fontPath, size)
@@ -424,17 +502,11 @@ function NarcoTips:InitNotepad()
         FlashSaved()
     end)
 
-    -- === Auto-save on content scroll size change ===
-    scroll:SetScript("OnSizeChanged", function()
-        content:SetWidth(scroll:GetWidth())
-    end)
-
     -- === Save and close ===
     local function SaveAndClose()
         db.windowWidth = frame:GetWidth()
         db.windowHeight = frame:GetHeight()
         NarcoTips:Save()
-        NarcoTips:Debug("Saved and closed")
         frame:Hide()
     end
 
@@ -474,7 +546,6 @@ function NarcoTips:InitNotepad()
         else
             input:SetFocus()
         end
-        NarcoTips:Debug("Notepad opened" .. (enemy and " (enemy)" or (discreet and " (discreet)" or "")))
     end
 
     function frame:Toggle()

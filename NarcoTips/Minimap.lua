@@ -9,26 +9,26 @@ function NarcoTips:InitMinimap()
     button:SetFrameStrata("MEDIUM")
     button:SetFrameLevel(8)
 
-    -- Icon texture
+    -- Icon texture (use a vanilla-safe path)
     local icon = button:CreateTexture(nil, "BACKGROUND")
-    icon:SetTexture("Interface\\Icons\\INV_Misc_Note_02")
+    icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
     icon:SetSize(20, 20)
-    icon:SetPoint("CENTER")
+    icon:SetPoint("CENTER", button, "CENTER")
 
-    button:SetNormalTexture(icon)
-    button:SetPushedTexture(icon)
-    button:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+    -- Highlight on hover
+    local highlight = button:CreateTexture(nil, "HIGHLIGHT")
+    highlight:SetTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+    highlight:SetAllPoints(icon)
 
-    -- Border ring
+    -- Border ring (vanilla minimap button border)
     local border = button:CreateTexture(nil, "OVERLAY")
     border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
     border:SetSize(54, 54)
     border:SetPoint("TOPLEFT", button, "TOPLEFT", -6, 5)
 
     -- Badge (count overlay)
-    local badge = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local badge = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
     badge:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 2, -2)
-    badge:SetTextColor(1, 0.3, 0.3)
     badge:SetText("")
 
     -- Position on minimap
