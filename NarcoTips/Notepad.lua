@@ -111,7 +111,7 @@ function NarcoTips:InitNotepad()
     input:SetHeight(24)
     input:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -56)
     input:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -8, -56)
-    input:SetFont(fontPath, fontSize)
+    input:SetFont(fontPath, fontSize, "")
     input:SetAutoFocus(false)
     input:SetMaxLetters(120)
     input:EnableMouse(true)
@@ -406,7 +406,7 @@ function NarcoTips:InitNotepad()
                 displayText = color .. prefix .. item.text .. "|r"
             end
             row.text:SetText(displayText)
-            row.text:SetFont(fontPath, self.db.fontSize or 14)
+            row.text:SetFont(fontPath, self.db.fontSize or 14, "")
 
             -- Checkbox handler
             row.check:SetScript("OnClick", function()
@@ -462,10 +462,10 @@ function NarcoTips:InitNotepad()
     -- === Font size control ===
     function NarcoTips:UpdateFontSize()
         local size = self.db.fontSize or 14
-        input:SetFont(fontPath, size)
+        input:SetFont(fontPath, size, "")
         for _, row in ipairs(rows) do
             if row:IsShown() then
-                row.text:SetFont(fontPath, size)
+                row.text:SetFont(fontPath, size, "")
             end
         end
     end
