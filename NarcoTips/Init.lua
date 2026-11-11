@@ -2,7 +2,7 @@
 -- Namespace, saved variables, defaults
 
 NarcoTips = {}
-NarcoTips.version = "0.1.0-dev"
+NarcoTips.version = "1.0.0"
 
 -- Default settings (account-wide, persisted via SavedVariables)
 NarcoTips.defaults = {

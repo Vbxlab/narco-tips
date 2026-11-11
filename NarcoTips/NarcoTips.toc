@@ -2,7 +2,7 @@
 ## Title: Narco-Tips
 ## Notes: Bloc-notes persistant avec ouverture auto en capitale
 ## Author: Vincent
-## Version: 0.1.0-dev
+## Version: 1.0.0
 ## SavedVariables: NarcoTipsDB
 
 # Load order
