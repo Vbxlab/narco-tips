@@ -9,8 +9,20 @@ function NarcoTips:InitMinimap()
     button:SetFrameStrata("MEDIUM")
     button:SetFrameLevel(8)
 
-    -- Icon texture (vanilla-safe path)
-    local icon = button:CreateTexture(nil, "BACKGROUND")
+    -- Border background — simple colored square behind icon
+    local borderBg = button:CreateTexture(nil, "BACKGROUND")
+    borderBg:SetColorTexture(0.15, 0.10, 0.25, 1.0)
+    borderBg:SetSize(26, 26)
+    borderBg:SetPoint("CENTER", button, "CENTER", 0, 0)
+
+    -- Border ring — thin colored edge
+    local borderRing = button:CreateTexture(nil, "BORDER")
+    borderRing:SetColorTexture(0.6, 0.4, 0.8, 0.8)
+    borderRing:SetSize(28, 28)
+    borderRing:SetPoint("CENTER", button, "CENTER", 0, 0)
+
+    -- Icon texture on top of border
+    local icon = button:CreateTexture(nil, "ARTWORK")
     icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
     icon:SetSize(20, 20)
     icon:SetPoint("CENTER", button, "CENTER", 0, 0)
@@ -19,13 +31,6 @@ function NarcoTips:InitMinimap()
     local highlight = button:CreateTexture(nil, "HIGHLIGHT")
     highlight:SetTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
     highlight:SetAllPoints(icon)
-
-    -- Border ring — using backdrop for reliable alignment
-    button:SetBackdrop({
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        edgeSize = 12,
-    })
-    button:SetBackdropBorderColor(0.6, 0.4, 0.8, 1.0)
 
     -- Badge (count overlay)
     local badge = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
