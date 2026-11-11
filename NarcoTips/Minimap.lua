@@ -20,11 +20,12 @@ function NarcoTips:InitMinimap()
     highlight:SetTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
     highlight:SetAllPoints(icon)
 
-    -- Border ring — aligned with vanilla minimap button standard
-    local border = button:CreateTexture(nil, "OVERLAY")
-    border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
-    border:SetSize(52, 52)
-    border:SetPoint("TOPLEFT", button, "TOPLEFT", -6, 5)
+    -- Border ring — using backdrop for reliable alignment
+    button:SetBackdrop({
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        edgeSize = 12,
+    })
+    button:SetBackdropBorderColor(0.6, 0.4, 0.8, 1.0)
 
     -- Badge (count overlay)
     local badge = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
