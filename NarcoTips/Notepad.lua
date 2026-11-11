@@ -326,7 +326,7 @@ function NarcoTips:InitNotepad()
         del:SetSize(18, 18)
         del:SetPoint("RIGHT", row, "RIGHT", -2, 0)
 
-        local delTex = del:CreateTexture(nil, "NORMAL")
+        local delTex = del:CreateTexture(nil, "ARTWORK")
         delTex:SetTexture("Interface\\Buttons\\UI-MinusButton-Up")
         delTex:SetAllPoints()
 

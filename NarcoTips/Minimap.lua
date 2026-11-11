@@ -5,36 +5,36 @@ function NarcoTips:InitMinimap()
     local db = self.db
 
     local button = CreateFrame("Button", "NarcoTipsMinimapButton", Minimap)
-    button:SetSize(32, 32)
+    button:SetSize(31, 31)
     button:SetFrameStrata("MEDIUM")
     button:SetFrameLevel(8)
 
-    -- Icon texture (use a vanilla-safe path)
+    -- Icon texture (vanilla-safe path)
     local icon = button:CreateTexture(nil, "BACKGROUND")
     icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
     icon:SetSize(20, 20)
-    icon:SetPoint("CENTER", button, "CENTER")
+    icon:SetPoint("CENTER", button, "CENTER", 0, 0)
 
     -- Highlight on hover
     local highlight = button:CreateTexture(nil, "HIGHLIGHT")
     highlight:SetTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
     highlight:SetAllPoints(icon)
 
-    -- Border ring (vanilla minimap button border)
+    -- Border ring — aligned with vanilla minimap button standard
     local border = button:CreateTexture(nil, "OVERLAY")
     border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
-    border:SetSize(54, 54)
+    border:SetSize(52, 52)
     border:SetPoint("TOPLEFT", button, "TOPLEFT", -6, 5)
 
     -- Badge (count overlay)
     local badge = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-    badge:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 2, -2)
+    badge:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 4, -4)
     badge:SetText("")
 
     -- Position on minimap
     local function UpdatePosition(angle)
-        local x = math.cos(angle) * 80
-        local y = math.sin(angle) * 80
+        local x = math.cos(angle) * 78
+        local y = math.sin(angle) * 78
         button:ClearAllPoints()
         button:SetPoint("CENTER", Minimap, "CENTER", x, y)
     end

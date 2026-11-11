@@ -24,13 +24,20 @@ NarcoTips.minimap = nil
 NarcoTips.db = nil
 
 -- Capital cities mapped to their faction
+-- Both English and French names (client may be in either language)
 NarcoTips.capitals = {
-    ["Stormwind City"] = "Alliance",
+    -- English
+    ["Stormwind City"]  = "Alliance",
     ["Ironforge"]       = "Alliance",
     ["Darnassus"]       = "Alliance",
     ["Orgrimmar"]       = "Horde",
     ["Thunder Bluff"]   = "Horde",
     ["Undercity"]       = "Horde",
+    -- French
+    ["Hurlevent"]       = "Alliance",
+    ["Forgefer"]        = "Alliance",
+    ["Les Pitons du Tonnerre"] = "Horde",
+    ["Fossoyeuse"]      = "Horde",
 }
 
 -- Preset buttons configuration
@@ -89,9 +96,11 @@ end
 -- Get capital info
 -- Returns: inCapital (bool), isFriendly (bool|nil)
 function NarcoTips:GetCapitalInfo()
-    local zone = GetZoneText()
-    local sub = GetSubZoneText()
-    local capFaction = self.capitals[zone] or self.capitals[sub]
+    -- Try multiple zone APIs to be safe
+    local zone = GetRealZoneText() or ""
+    local sub = GetSubZoneText() or ""
+    local zoneText = GetZoneText() or ""
+    local capFaction = self.capitals[zone] or self.capitals[sub] or self.capitals[zoneText]
     if not capFaction then
         return false, nil
     end
