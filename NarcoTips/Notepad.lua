@@ -113,7 +113,7 @@ function NarcoTips:InitNotepad()
     input:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -8, -56)
     input:SetFont(fontPath, fontSize, "")
     input:SetAutoFocus(false)
-    input:SetMaxLetters(120)
+    input:SetMaxLetters(0)
     input:EnableMouse(true)
 
     -- Background for input
