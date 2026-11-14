@@ -8,6 +8,23 @@ f:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 f:RegisterEvent("ZONE_CHANGED")
 f:RegisterEvent("PLAYER_LOGOUT")
 
+-- Delayed check frame (avoids checking zone too early after loading screens)
+local delayFrame = CreateFrame("Frame")
+delayFrame:Hide()
+delayFrame:SetScript("OnUpdate", function(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed >= 2 then
+        self:Hide()
+        self.elapsed = 0
+        NarcoTips:CheckAutoOpen()
+    end
+end)
+
+local function StartDelayedCheck()
+    delayFrame.elapsed = 0
+    delayFrame:Show()
+end
+
 f:SetScript("OnEvent", function(self, event, arg1)
     if event == "ADDON_LOADED" and arg1 == "NarcoTips" then
         NarcoTips:InitDB()
@@ -17,13 +34,18 @@ f:SetScript("OnEvent", function(self, event, arg1)
         if NarcoTips.InitMinimap then NarcoTips:InitMinimap() end
 
     elseif event == "PLAYER_ENTERING_WORLD" then
+        -- This fires on login AND on loading screens (boat transitions, instances, etc.)
+        -- Zone info may not be updated yet, so delay the check by 2 seconds
         NarcoTips.alreadyAutoOpened = false
-        NarcoTips:Debug("PLAYER_ENTERING_WORLD — flag reset")
-        NarcoTips:CheckAutoOpen()
+        NarcoTips:Debug("PLAYER_ENTERING_WORLD — flag reset, delayed check in 2s")
+        StartDelayedCheck()
 
     elseif event == "ZONE_CHANGED_NEW_AREA" or event == "ZONE_CHANGED" then
+        -- These fire when the zone is actually set, so we can check immediately
         if not NarcoTips:IsInCapital() then
             NarcoTips.alreadyAutoOpened = false
+            -- Cancel any pending delayed check since we left the capital
+            delayFrame:Hide()
             NarcoTips:Debug("Left capital — flag reset")
         else
             NarcoTips:CheckAutoOpen()
