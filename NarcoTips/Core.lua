@@ -44,18 +44,19 @@ function NarcoTips:CheckAutoOpen()
     local inCap, isFriendly = self:GetCapitalInfo()
     if not inCap then return end
 
-    self.alreadyAutoOpened = true
-    local enemy = not isFriendly
-    local unchecked = self:CountUnchecked()
-
-    if enemy then
-        self:Debug("Auto-opening in ENEMY capital — extra discreet")
-    else
-        self:Debug("Auto-opening in friendly capital — discreet")
+    -- Only auto-open in friendly capitals, not enemy capitals
+    if not isFriendly then
+        self:Debug("In enemy capital — skipping auto-open")
+        return
     end
 
+    self.alreadyAutoOpened = true
+    local unchecked = self:CountUnchecked()
+
+    self:Debug("Auto-opening in friendly capital — discreet")
+
     if self.notepad and self.notepad.Open then
-        self.notepad:Open(true, enemy)
+        self.notepad:Open(true, false)
     end
 
     -- Welcome message in chat
