@@ -302,7 +302,7 @@ function NarcoTips:InitNotepad()
 
     local function CreateRow(idx)
         local row = CreateFrame("Frame", nil, content)
-        row:SetHeight(ROW_HEIGHT)
+        row:SetHeight(MIN_ROW_HEIGHT)
 
         -- Custom checkbox
         local check = CreateCheckbox(row)
