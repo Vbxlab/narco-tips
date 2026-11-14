@@ -236,7 +236,7 @@ function NarcoTips:InitNotepad()
 
     -- === Row management ===
     local rows = {}
-    local ROW_HEIGHT = 28
+    local MIN_ROW_HEIGHT = 28
 
     -- Safe C_Timer check
     local function SafeTimer(delay, func)
@@ -353,9 +353,7 @@ function NarcoTips:InitNotepad()
     function NarcoTips:RefreshList()
         local notes = db.notes or {}
         local n = #notes
-
-        -- Update content height
-        content:SetHeight(math.max(n * ROW_HEIGHT, 1))
+        local totalHeight = 0
 
         -- Update count badge
         local unchecked = self:CountUnchecked()
@@ -371,14 +369,6 @@ function NarcoTips:InitNotepad()
                 rows[i] = CreateRow(i)
             end
             local row = rows[i]
-            row:ClearAllPoints()
-            if i == 1 then
-                row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, 0)
-                row:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, 0)
-            else
-                row:SetPoint("TOPLEFT", rows[i-1], "BOTTOMLEFT", 0, 0)
-                row:SetPoint("TOPRIGHT", rows[i-1], "BOTTOMRIGHT", 0, 0)
-            end
 
             local item = notes[i]
             row.check:SetChecked(item.checked)
@@ -408,6 +398,23 @@ function NarcoTips:InitNotepad()
             row.text:SetText(displayText)
             row.text:SetFont(fontPath, self.db.fontSize or 14, "")
 
+            -- Calculate dynamic row height based on text wrapping
+            local textHeight = row.text:GetStringHeight()
+            local rowHeight = math.max(MIN_ROW_HEIGHT, (textHeight or 14) + 10)
+            row:SetHeight(rowHeight)
+
+            -- Position row
+            row:ClearAllPoints()
+            if i == 1 then
+                row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, 0)
+                row:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, 0)
+            else
+                row:SetPoint("TOPLEFT", rows[i-1], "BOTTOMLEFT", 0, 0)
+                row:SetPoint("TOPRIGHT", rows[i-1], "BOTTOMRIGHT", 0, 0)
+            end
+
+            totalHeight = totalHeight + rowHeight
+
             -- Checkbox handler
             row.check:SetScript("OnClick", function()
                 item.checked = not item.checked
@@ -426,6 +433,9 @@ function NarcoTips:InitNotepad()
 
             row:Show()
         end
+
+        -- Update content height to fit all rows
+        content:SetHeight(math.max(totalHeight, 1))
 
         -- Hide extra rows
         for i = n + 1, #rows do
