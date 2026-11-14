@@ -1,5 +1,6 @@
 -- Narco-Tips - Minimap Button
 -- Click to toggle notepad, draggable around minimap, badge with unchecked count
+-- Layout matches LibDBIcon-1.0 standard for non-mainline clients
 
 function NarcoTips:InitMinimap()
     local db = self.db
@@ -9,28 +10,26 @@ function NarcoTips:InitMinimap()
     button:SetFrameStrata("MEDIUM")
     button:SetFrameLevel(8)
 
-    -- Border background — simple colored square behind icon
-    local borderBg = button:CreateTexture(nil, "BACKGROUND")
-    borderBg:SetColorTexture(0.15, 0.10, 0.25, 1.0)
-    borderBg:SetSize(26, 26)
-    borderBg:SetPoint("CENTER", button, "CENTER", 0, 0)
+    -- Background (UI-Minimap-Background)
+    local background = button:CreateTexture(nil, "BACKGROUND")
+    background:SetTexture(136467) -- Interface\Minimap\UI-Minimap-Background
+    background:SetSize(20, 20)
+    background:SetPoint("TOPLEFT", button, "TOPLEFT", 7, -5)
 
-    -- Border ring — thin colored edge
-    local borderRing = button:CreateTexture(nil, "BORDER")
-    borderRing:SetColorTexture(0.6, 0.4, 0.8, 0.8)
-    borderRing:SetSize(28, 28)
-    borderRing:SetPoint("CENTER", button, "CENTER", 0, 0)
+    -- Border (MiniMap-TrackingBorder) — overlay, anchored from TOPLEFT
+    local border = button:CreateTexture(nil, "OVERLAY")
+    border:SetTexture(136430) -- Interface\Minimap\MiniMap-TrackingBorder
+    border:SetSize(53, 53)
+    border:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0)
 
-    -- Icon texture on top of border
+    -- Icon
     local icon = button:CreateTexture(nil, "ARTWORK")
     icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
-    icon:SetSize(20, 20)
-    icon:SetPoint("CENTER", button, "CENTER", 0, 0)
+    icon:SetSize(17, 17)
+    icon:SetPoint("TOPLEFT", button, "TOPLEFT", 7, -6)
 
     -- Highlight on hover
-    local highlight = button:CreateTexture(nil, "HIGHLIGHT")
-    highlight:SetTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-    highlight:SetAllPoints(icon)
+    button:SetHighlightTexture(136477) -- Interface\Minimap\UI-Minimap-ZoomButton-Highlight
 
     -- Badge (count overlay)
     local badge = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
@@ -81,7 +80,7 @@ function NarcoTips:InitMinimap()
         if unchecked > 0 then
             GameTooltip:AddLine("|cFFFFAA00" .. unchecked .. "|r tâche(s) à faire", 1, 1, 1)
         else
-            GameTooltip:AddLine("Aucune tâche en attente |cFF4CAF50✓|r", 0.7, 0.7, 0.7)
+            GameTooltip:AddLine("Aucune tâche en attente |cFF4CEF50✓|r", 0.7, 0.7, 0.7)
         end
         GameTooltip:AddLine(" ")
         GameTooltip:AddLine("Clic: ouvrir/fermer", 0.7, 0.7, 0.7)
