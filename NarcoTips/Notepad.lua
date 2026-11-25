@@ -1,10 +1,11 @@
 -- Narco-Tips - Notepad
--- Interactive checklist with presets, timestamps, font sizing, auto-save
+-- Interactive checklist with presets, timestamps, font sizing, auto-save, language selector
 
 function NarcoTips:InitNotepad()
     local db = self.db
     local fontSize = db.fontSize or 14
     local fontPath = "Fonts\\FRIZQT__.TTF"
+    local L = self  -- for self:T() calls
 
     -- === Main window ===
     local frame = CreateFrame("Frame", "NarcoTipsNotepad", UIParent)
@@ -40,11 +41,59 @@ function NarcoTips:InitNotepad()
 
     local titleText = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleText:SetPoint("LEFT", titleBar, "LEFT", 8, 0)
-    titleText:SetText("|cFF9966FFNarco-Tips|r")
+    titleText:SetText("|cFF9966FF" .. self:T("title") .. "|r")
+
+    -- === Language selector button ===
+    local langBtn = CreateFrame("Button", nil, titleBar, "UIPanelButtonTemplate")
+    langBtn:SetSize(32, 18)
+    langBtn:SetPoint("RIGHT", titleBar, "RIGHT", -30, 0)
+    langBtn:SetText(self:GetLanguageDisplay(self:GetCurrentLanguage()))
+
+    local currentLangIndex = 1
+    local availableLangs = self:GetAvailableLanguages()
+    -- Find current language index
+    for i, lang in ipairs(availableLangs) do
+        if lang == self:GetCurrentLanguage() then
+            currentLangIndex = i
+            break
+        end
+    end
+
+    local function RefreshAllText()
+        titleText:SetText("|cFF9966FF" .. self:T("title") .. "|r")
+        langBtn:SetText(self:GetLanguageDisplay(self:GetCurrentLanguage()))
+        input.placeholder:SetText(self:T("placeholder"))
+        btnCheckAll:SetText(self:T("checkAll"))
+        btnUncheckAll:SetText(self:T("uncheckAll"))
+        btnClearChecked:SetText(self:T("clearChecked"))
+        -- Refresh preset buttons
+        for _, preset in ipairs(self.presetKeys) do
+            if presetBtns[preset] then
+                presetBtns[preset]:SetText(self:T(preset))
+            end
+        end
+        -- Refresh list
+        self:RefreshList()
+        -- Refresh minimap tooltip
+        if self.minimap then
+            -- tooltip updates on next hover
+        end
+    end
+
+    langBtn:SetScript("OnClick", function()
+        currentLangIndex = currentLangIndex + 1
+        if currentLangIndex > #availableLangs then
+            currentLangIndex = 1
+        end
+        local newLang = availableLangs[currentLangIndex]
+        self:SetLanguage(newLang)
+        langBtn:SetText(self:GetLanguageDisplay(newLang))
+        RefreshAllText()
+    end)
 
     -- Item count badge in title
     local countText = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    countText:SetPoint("RIGHT", titleBar, "RIGHT", -30, 0)
+    countText:SetPoint("RIGHT", langBtn, "LEFT", -4, 0)
 
     local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 2, 2)
@@ -57,19 +106,26 @@ function NarcoTips:InitNotepad()
 
     local presetBtns = {}
     local px = 0
-    for _, preset in ipairs(self.presets) do
+    for _, presetKey in ipairs(self.presetKeys) do
         local btn = CreateFrame("Button", nil, presetBar, "UIPanelButtonTemplate")
         btn:SetSize(52, 20)
         btn:SetPoint("LEFT", presetBar, "LEFT", px, 0)
-        btn:SetText(preset.label)
+        btn:SetText(self:T(presetKey))
         btn:SetScript("OnClick", function()
-            NarcoTips:AddItemFromPreset(preset)
+            -- Build preset prefix from locale
+            local prefixKey = presetKey .. "Prefix"
+            local prefix = self:T(prefixKey)
+            input:SetText(prefix)
+            input:SetFocus()
+            input:HighlightText(0, 0)
+            input:SetCursorPosition(#prefix)
+            input.pendingPreset = presetKey
         end)
-        presetBtns[preset.key] = btn
+        presetBtns[presetKey] = btn
         px = px + 56
     end
 
-    -- Font size: - and + buttons (no slider template dependency)
+    -- Font size: - and + buttons
     local fontMinus = CreateFrame("Button", nil, presetBar, "UIPanelButtonTemplate")
     fontMinus:SetSize(20, 20)
     fontMinus:SetPoint("RIGHT", presetBar, "RIGHT", -2, 0)
@@ -116,7 +172,6 @@ function NarcoTips:InitNotepad()
     input:SetMaxLetters(0)
     input:EnableMouse(true)
 
-    -- Background for input
     local inputBg = input:CreateTexture(nil, "BACKGROUND")
     inputBg:SetAllPoints()
     inputBg:SetColorTexture(0.12, 0.12, 0.16, 1.0)
@@ -132,10 +187,9 @@ function NarcoTips:InitNotepad()
         local text = self:GetText()
         if text and text ~= "" then
             local presetKey = self.pendingPreset or "misc"
-            -- Strip the prefix from the text if it matches
             local prefix = ""
-            for _, p in ipairs(NarcoTips.presets) do
-                if p.key == presetKey then prefix = p.prefix end
+            for _, pk in ipairs(NarcoTips.presetKeys) do
+                if pk == presetKey then prefix = NarcoTips:T(pk .. "Prefix") end
             end
             local cleanText = text
             if prefix ~= "" then
@@ -161,7 +215,8 @@ function NarcoTips:InitNotepad()
     -- Placeholder text
     local placeholder = input:CreateFontString(nil, "OVERLAY", "GameFontDisable")
     placeholder:SetPoint("LEFT", input, "LEFT", 8, 0)
-    placeholder:SetText("Tape une tâche puis Entrée…")
+    placeholder:SetText(self:T("placeholder"))
+    input.placeholder = placeholder
     input:SetScript("OnEditFocusGained", function() placeholder:Hide() end)
     input:SetScript("OnEditFocusLost", function()
         if input:GetText() == "" then placeholder:Show() end
@@ -191,17 +246,17 @@ function NarcoTips:InitNotepad()
     local btnCheckAll = CreateFrame("Button", nil, bottomBar, "UIPanelButtonTemplate")
     btnCheckAll:SetSize(90, 22)
     btnCheckAll:SetPoint("LEFT", bottomBar, "LEFT", 0, 0)
-    btnCheckAll:SetText("Tout cocher")
+    btnCheckAll:SetText(self:T("checkAll"))
 
     local btnUncheckAll = CreateFrame("Button", nil, bottomBar, "UIPanelButtonTemplate")
     btnUncheckAll:SetSize(100, 22)
     btnUncheckAll:SetPoint("LEFT", btnCheckAll, "RIGHT", 4, 0)
-    btnUncheckAll:SetText("Tout décocher")
+    btnUncheckAll:SetText(self:T("uncheckAll"))
 
     local btnClearChecked = CreateFrame("Button", nil, bottomBar, "UIPanelButtonTemplate")
     btnClearChecked:SetSize(110, 22)
     btnClearChecked:SetPoint("LEFT", btnUncheckAll, "RIGHT", 4, 0)
-    btnClearChecked:SetText("Effacer cochés")
+    btnClearChecked:SetText(self:T("clearChecked"))
 
     -- Save indicator
     local saveIndicator = bottomBar:CreateFontString(nil, "OVERLAY", "GameFontDisable")
@@ -243,7 +298,6 @@ function NarcoTips:InitNotepad()
         if C_Timer and C_Timer.After then
             C_Timer.After(delay, func)
         else
-            -- Fallback: use OnUpdate timer
             local t = CreateFrame("Frame")
             local elapsed = 0
             t:SetScript("OnUpdate", function(self, delta)
@@ -256,19 +310,16 @@ function NarcoTips:InitNotepad()
         end
     end
 
-    -- Create a custom checkbox (no template dependency)
+    -- Create a custom checkbox
     local function CreateCheckbox(parent)
         local cb = CreateFrame("Button", nil, parent)
         cb:SetSize(18, 18)
 
         local tex = cb:CreateTexture(nil, "BACKGROUND")
         tex:SetAllPoints()
-
-        -- Unchecked state
         tex:SetTexture("Interface\\Buttons\\UI-CheckBox-Up")
         cb.uncheckedTex = tex
 
-        -- Checked overlay
         local checkTex = cb:CreateTexture(nil, "OVERLAY")
         checkTex:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
         checkTex:SetAllPoints()
@@ -294,9 +345,7 @@ function NarcoTips:InitNotepad()
             self:SetChecked(not self.checkedState)
         end)
 
-        -- Initialize unchecked
         cb:SetChecked(false)
-
         return cb
     end
 
@@ -304,24 +353,20 @@ function NarcoTips:InitNotepad()
         local row = CreateFrame("Frame", nil, content)
         row:SetHeight(MIN_ROW_HEIGHT)
 
-        -- Custom checkbox
         local check = CreateCheckbox(row)
         check:SetPoint("LEFT", row, "LEFT", 4, 0)
 
-        -- Timestamp
         local time = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
         time:SetPoint("LEFT", check, "RIGHT", 4, 0)
         time:SetWidth(90)
         time:SetJustifyH("LEFT")
 
-        -- Text
         local text = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         text:SetPoint("LEFT", time, "RIGHT", 4, 0)
         text:SetPoint("RIGHT", row, "RIGHT", -24, 0)
         text:SetJustifyH("LEFT")
         text:SetWordWrap(true)
 
-        -- Delete button (simple red X)
         local del = CreateFrame("Button", nil, row)
         del:SetSize(18, 18)
         del:SetPoint("RIGHT", row, "RIGHT", -2, 0)
@@ -343,7 +388,7 @@ function NarcoTips:InitNotepad()
 
     -- === Flash save indicator ===
     local function FlashSaved()
-        saveIndicator:SetText("|cFF4CAF50Sauvegardé ✓|r")
+        saveIndicator:SetText("|cFF4CAF50" .. self:T("saved") .. "|r")
         SafeTimer(1.5, function()
             saveIndicator:SetText("")
         end)
@@ -358,7 +403,7 @@ function NarcoTips:InitNotepad()
         -- Update count badge
         local unchecked = self:CountUnchecked()
         if unchecked > 0 then
-            countText:SetText("|cFFFFAA00" .. unchecked .. "|r à faire")
+            countText:SetText("|cFFFFAA00" .. unchecked .. "|r " .. self:T("tasksRemaining"))
         else
             countText:SetText("|cFF4CAF50✓|r")
         end
@@ -376,17 +421,20 @@ function NarcoTips:InitNotepad()
             -- Timestamp
             row.time:SetText(item.time or "")
 
-            -- Text with preset color and strikethrough if checked
+            -- Text with preset color
             local prefix = ""
             local color = "|cFFCCCCCC"
             if item.preset then
-                for _, p in ipairs(self.presets) do
-                    if p.key == item.preset then
-                        color = p.color
-                        prefix = p.prefix
-                        break
-                    end
-                end
+                prefix = self:T(item.preset .. "Prefix")
+                -- Color mapping
+                local colors = {
+                    buy   = "|cFF4CAF50",
+                    sell  = "|cFFFF9800",
+                    craft = "|cFF2196F3",
+                    bank  = "|cFF9C27B0",
+                    misc  = "|cFFCCCCCC",
+                }
+                color = colors[item.preset] or color
             end
 
             local displayText
@@ -398,7 +446,7 @@ function NarcoTips:InitNotepad()
             row.text:SetText(displayText)
             row.text:SetFont(fontPath, self.db.fontSize or 14, "")
 
-            -- Calculate dynamic row height based on text wrapping
+            -- Calculate dynamic row height
             local textHeight = row.text:GetStringHeight()
             local rowHeight = math.max(MIN_ROW_HEIGHT, (textHeight or 14) + 10)
             row:SetHeight(rowHeight)
@@ -434,7 +482,7 @@ function NarcoTips:InitNotepad()
             row:Show()
         end
 
-        -- Update content height to fit all rows
+        -- Update content height
         content:SetHeight(math.max(totalHeight, 1))
 
         -- Hide extra rows
@@ -458,15 +506,6 @@ function NarcoTips:InitNotepad()
         self:Save()
         self:RefreshList()
         FlashSaved()
-    end
-
-    -- Add item from preset (prompt for text via input field)
-    function NarcoTips:AddItemFromPreset(preset)
-        input:SetText(preset.prefix)
-        input:SetFocus()
-        input:HighlightText(0, 0)
-        input:SetCursorPosition(#preset.prefix)
-        input.pendingPreset = preset.key
     end
 
     -- === Font size control ===
@@ -551,8 +590,18 @@ function NarcoTips:InitNotepad()
         frame:Show()
         NarcoTips:RefreshList()
         NarcoTips:UpdateFontSize()
-        -- Auto-open (discreet) never steals focus — user is moving
-        -- Manual open (discreet=false) gives focus to input
+        -- Refresh localized text
+        titleText:SetText("|cFF9966FF" .. NarcoTips:T("title") .. "|r")
+        langBtn:SetText(NarcoTips:GetLanguageDisplay(NarcoTips:GetCurrentLanguage()))
+        placeholder:SetText(NarcoTips:T("placeholder"))
+        btnCheckAll:SetText(NarcoTips:T("checkAll"))
+        btnUncheckAll:SetText(NarcoTips:T("uncheckAll"))
+        btnClearChecked:SetText(NarcoTips:T("clearChecked"))
+        for _, presetKey in ipairs(NarcoTips.presetKeys) do
+            if presetBtns[presetKey] then
+                presetBtns[presetKey]:SetText(NarcoTips:T(presetKey))
+            end
+        end
         if discreet then
             input:ClearFocus()
         else
@@ -569,6 +618,7 @@ function NarcoTips:InitNotepad()
     end
 
     NarcoTips.notepad = frame
+    NarcoTips.RefreshAllText = RefreshAllText
 
     -- Initial refresh
     self:RefreshList()

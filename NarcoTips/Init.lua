@@ -1,8 +1,8 @@
 -- Narco-Tips - Initialization
--- Namespace, saved variables, defaults
+-- Namespace, saved variables, defaults, localization
 
-NarcoTips = {}
-NarcoTips.version = "1.3.0"
+NarcoTips = NarcoTips or {}
+NarcoTips.version = "1.4.0"
 
 -- Default settings (account-wide, persisted via SavedVariables)
 NarcoTips.defaults = {
@@ -15,6 +15,8 @@ NarcoTips.defaults = {
     windowAlpha = 0.88,
     -- font
     fontSize = 14,
+    -- language: nil = auto-detect, or "enUS"/"frFR"/"deDE"/"itIT"/"esES"
+    language = nil,
 }
 
 -- In-memory state
@@ -40,14 +42,8 @@ NarcoTips.capitals = {
     ["Fossoyeuse"]      = "Horde",
 }
 
--- Preset buttons configuration
-NarcoTips.presets = {
-    {key = "buy",    label = "Acheter",  prefix = "Acheter : ",   color = "|cFF4CAF50"},  -- green
-    {key = "sell",   label = "Vendre",   prefix = "Vendre : ",    color = "|cFFFF9800"},  -- orange
-    {key = "craft",  label = "Craft",    prefix = "Craft : ",     color = "|cFF2196F3"},  -- blue
-    {key = "bank",   label = "Banque",   prefix = "Banque : ",    color = "|cFF9C27B0"},  -- purple
-    {key = "misc",   label = "Divers",   prefix = "",             color = "|cFFCCCCCC"},  -- grey
-}
+-- Presets configuration (keys reference locale strings)
+NarcoTips.presetKeys = {"buy", "sell", "craft", "bank", "misc"}
 
 -- Deep merge helper
 local function mergeDefaults(saved, defaults)
@@ -68,10 +64,56 @@ function NarcoTips:InitDB()
     self.db = mergeDefaults(NarcoTipsDB, self.defaults)
 end
 
+-- === Localization ===
+
+-- Get current locale string
+function NarcoTips:T(key)
+    local lang = self:GetCurrentLanguage()
+    local L = self.L
+    if L[lang] and L[lang][key] then
+        return L[lang][key]
+    end
+    -- Fallback to English
+    if L.enUS and L.enUS[key] then
+        return L.enUS[key]
+    end
+    return key
+end
+
+-- Determine current language: manual override or auto-detect
+function NarcoTips:GetCurrentLanguage()
+    if self.db and self.db.language then
+        return self.db.language
+    end
+    -- Auto-detect from client
+    local locale = GetLocale()
+    if self.L[locale] then
+        return locale
+    end
+    return "enUS"
+end
+
+-- Set manual language override
+function NarcoTips:SetLanguage(lang)
+    self.db.language = lang
+    self:Save()
+end
+
+-- Get list of available languages
+function NarcoTips:GetAvailableLanguages()
+    return self.localeKeys or {"enUS"}
+end
+
+-- Get display name for a language code
+function NarcoTips:GetLanguageDisplay(lang)
+    local key = "lang_" .. lang
+    local text = self:T(key)
+    return text
+end
+
 -- Save current state to SavedVariables
 function NarcoTips:Save()
     if not self.db then return end
-    -- Only save plain text (strip color codes from display)
     local cleanNotes = {}
     for i, item in ipairs(self.db.notes) do
         cleanNotes[i] = {
@@ -86,17 +128,15 @@ function NarcoTips:Save()
 end
 
 function NarcoTips:Print(msg)
-    print("|cFF9966FF[Narco-Tips]|r " .. tostring(msg))
+    print("|cFF9966FF[" .. self:T("title") .. "]|r " .. tostring(msg))
 end
 
 function NarcoTips:Debug(msg)
     -- print("|cFFFF6600[NT-DBG]|r " .. tostring(msg))
 end
 
--- Get capital info
--- Returns: inCapital (bool), isFriendly (bool|nil)
+-- Capital detection
 function NarcoTips:GetCapitalInfo()
-    -- Try multiple zone APIs to be safe
     local zone = GetRealZoneText() or ""
     local sub = GetSubZoneText() or ""
     local zoneText = GetZoneText() or ""
@@ -123,7 +163,6 @@ function NarcoTips:IsInEnemyCapital()
     return inCap and not isFriendly
 end
 
--- Count unchecked items
 function NarcoTips:CountUnchecked()
     if not self.db or not self.db.notes then return 0 end
     local n = 0
@@ -133,7 +172,6 @@ function NarcoTips:CountUnchecked()
     return n
 end
 
--- Format timestamp for new entries
 function NarcoTips:GetTimestamp()
     return date("%Y-%m-%d %H:%M")
 end

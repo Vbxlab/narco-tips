@@ -1,11 +1,18 @@
 ## Interface: 16001
 ## Title: Narco-Tips
-## Notes: Bloc-notes persistant avec ouverture auto en capitale
+## Notes: Checklist addon for WoW Forever
 ## Author: Vincent
-## Version: 1.3.0
+## Version: 1.4.0
 ## SavedVariables: NarcoTipsDB
 
-# Load order
+# Locale files (load before core)
+Locales/enUS.lua
+Locales/frFR.lua
+Locales/deDE.lua
+Locales/itIT.lua
+Locales/esES.lua
+
+# Core files (load order matters)
 Init.lua
 Core.lua
 Notepad.lua

@@ -12,13 +12,13 @@ function NarcoTips:InitMinimap()
 
     -- Background (UI-Minimap-Background)
     local background = button:CreateTexture(nil, "BACKGROUND")
-    background:SetTexture(136467) -- Interface\Minimap\UI-Minimap-Background
+    background:SetTexture(136467)
     background:SetSize(20, 20)
     background:SetPoint("TOPLEFT", button, "TOPLEFT", 7, -5)
 
-    -- Border (MiniMap-TrackingBorder) — overlay, anchored from TOPLEFT
+    -- Border (MiniMap-TrackingBorder)
     local border = button:CreateTexture(nil, "OVERLAY")
-    border:SetTexture(136430) -- Interface\Minimap\MiniMap-TrackingBorder
+    border:SetTexture(136430)
     border:SetSize(53, 53)
     border:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0)
 
@@ -29,7 +29,7 @@ function NarcoTips:InitMinimap()
     icon:SetPoint("TOPLEFT", button, "TOPLEFT", 7, -6)
 
     -- Highlight on hover
-    button:SetHighlightTexture(136477) -- Interface\Minimap\UI-Minimap-ZoomButton-Highlight
+    button:SetHighlightTexture(136477)
 
     -- Badge (count overlay)
     local badge = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
@@ -72,19 +72,19 @@ function NarcoTips:InitMinimap()
         end
     end)
 
-    -- Tooltip
+    -- Tooltip (localized)
     button:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        GameTooltip:SetText("|cFF9966FFNarco-Tips|r")
+        GameTooltip:SetText("|cFF9966FF" .. NarcoTips:T("title") .. "|r")
         local unchecked = NarcoTips:CountUnchecked()
         if unchecked > 0 then
-            GameTooltip:AddLine("|cFFFFAA00" .. unchecked .. "|r tâche(s) à faire", 1, 1, 1)
+            GameTooltip:AddLine("|cFFFFAA00" .. unchecked .. "|r " .. NarcoTips:T("tooltipTasks"), 1, 1, 1)
         else
-            GameTooltip:AddLine("Aucune tâche en attente |cFF4CEF50✓|r", 0.7, 0.7, 0.7)
+            GameTooltip:AddLine(NarcoTips:T("tooltipNoTasks"), 0.7, 0.7, 0.7)
         end
         GameTooltip:AddLine(" ")
-        GameTooltip:AddLine("Clic: ouvrir/fermer", 0.7, 0.7, 0.7)
-        GameTooltip:AddLine("Glisser: déplacer l'icône", 0.7, 0.7, 0.7)
+        GameTooltip:AddLine(NarcoTips:T("tooltipClick"), 0.7, 0.7, 0.7)
+        GameTooltip:AddLine(NarcoTips:T("tooltipDrag"), 0.7, 0.7, 0.7)
         GameTooltip:Show()
     end)
     button:SetScript("OnLeave", function()
@@ -94,11 +94,9 @@ function NarcoTips:InitMinimap()
     NarcoTips.minimap = button
     NarcoTips.badge = badge
 
-    -- Initial badge update
     self:UpdateMinimapBadge()
 end
 
--- Update the badge on the minimap button
 function NarcoTips:UpdateMinimapBadge()
     if not self.badge then return end
     local n = self:CountUnchecked()

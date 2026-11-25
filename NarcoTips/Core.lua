@@ -28,23 +28,19 @@ end
 f:SetScript("OnEvent", function(self, event, arg1)
     if event == "ADDON_LOADED" and arg1 == "NarcoTips" then
         NarcoTips:InitDB()
-        NarcoTips:Print("v" .. NarcoTips.version .. " loaded.")
+        NarcoTips:Print("v" .. NarcoTips.version .. " " .. NarcoTips:T("loaded"))
 
         if NarcoTips.InitNotepad then NarcoTips:InitNotepad() end
         if NarcoTips.InitMinimap then NarcoTips:InitMinimap() end
 
     elseif event == "PLAYER_ENTERING_WORLD" then
-        -- This fires on login AND on loading screens (boat transitions, instances, etc.)
-        -- Zone info may not be updated yet, so delay the check by 2 seconds
         NarcoTips.alreadyAutoOpened = false
         NarcoTips:Debug("PLAYER_ENTERING_WORLD — flag reset, delayed check in 2s")
         StartDelayedCheck()
 
     elseif event == "ZONE_CHANGED_NEW_AREA" or event == "ZONE_CHANGED" then
-        -- These fire when the zone is actually set, so we can check immediately
         if not NarcoTips:IsInCapital() then
             NarcoTips.alreadyAutoOpened = false
-            -- Cancel any pending delayed check since we left the capital
             delayFrame:Hide()
             NarcoTips:Debug("Left capital — flag reset")
         else
@@ -84,8 +80,8 @@ function NarcoTips:CheckAutoOpen()
     -- Welcome message in chat
     local zone = GetZoneText()
     if unchecked > 0 then
-        self:Print("|cFFFFFFAA" .. unchecked .. "|r tâche(s) en attente à " .. zone .. ".")
+        self:Print("|cFFFFFFAA" .. unchecked .. "|r " .. self:T("tasksPending") .. " " .. zone .. ".")
     else
-        self:Print("Rien d'urgent noté à " .. zone .. ". 😊")
+        self:Print(self:T("nothingUrgent") .. " " .. zone .. ". 😊")
     end
 end
