@@ -24,7 +24,7 @@ function NarcoTips:InitMinimap()
 
     -- Icon
     local icon = button:CreateTexture(nil, "ARTWORK")
-    icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
+    icon:SetTexture("Interface\\Icons\\INV_Misc_Note_01")
     icon:SetSize(17, 17)
     icon:SetPoint("TOPLEFT", button, "TOPLEFT", 7, -6)
 
