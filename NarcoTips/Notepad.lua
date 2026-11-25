@@ -67,7 +67,7 @@ function NarcoTips:InitNotepad()
         local newLang = availableLangs[currentLangIndex]
         self:SetLanguage(newLang)
         langBtn:SetText(self:GetLanguageDisplay(newLang))
-        if NarcoTips.RefreshAllText then NarcoTips.RefreshAllText() end
+        if NarcoTips.RefreshAllText then NarcoTips:RefreshAllText() end
     end)
 
     -- Item count badge in title
