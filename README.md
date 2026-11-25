@@ -89,7 +89,6 @@ for f in NarcoTips/*.lua NarcoTips/Locales/*.lua; do luajit -bl "$f" /dev/null 2
 ## Links
 
 - **GitHub:** https://github.com/Vbxlab/narco-tips
-- **CurseForge:** (pending approval)
 - **WoW Forever version:** 1.60.1 (Interface: 16001)
 
 ## Changelog
