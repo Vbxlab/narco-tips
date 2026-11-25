@@ -2,7 +2,7 @@
 ## Title: Narco-Tips
 ## Notes: Checklist addon for WoW Forever
 ## Author: Vincent
-## Version: 1.4.1
+## Version: 1.4.2
 ## SavedVariables: NarcoTipsDB
 
 # Locale files (load before core)
