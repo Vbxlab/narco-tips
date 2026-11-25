@@ -1,101 +1,116 @@
 # Narco-Tips — WoW Forever Addon
 
-Checklist interactive avec ouverture automatique en capitale, pensée pour aider à se souvenir des choses à faire.
+A discreet checklist addon for World of Warcraft: Forever that helps you keep track of tasks to do in capital cities.
 
-## Fonctionnalités
+Originally created for a friend who, due to illness and treatment side effects, kept forgetting what he had planned to craft, buy, or sell once he reached a capital. Narco-Tips solves this by automatically opening a personal checklist the moment you enter a friendly capital — no need to remember to check anything, it's just there.
 
-### Checklist cliquable
-- Chaque tâche a une case à cocher, un horodatage, et un texte
-- Clic sur la case = cocher/décocher → sauvegarde immédiate
-- Bouton de suppression individuel par tâche
+## Features
 
-### Notes datées
-- Horodatage automatique (format `YYYY-MM-DD HH:MM`) à chaque création de tâche
-- Visible dans la liste à côté de chaque item
+### Auto-open in capitals
+- Automatically opens when you arrive in a friendly capital city
+- Opens discreetly without stealing focus — your movement keys keep working
+- One trigger per visit (resets when you leave the capital)
+- No auto-open in enemy capitals
+- Delayed check after loading screens (boat transitions) to avoid false triggers
+- Chat message on arrival: "X task(s) pending" or "Nothing urgent 😊"
 
-### Boutons rapides pré-formatés
-5 presets en haut de la fenêtre :
-- **Acheter** (vert) — pré-remplit "Acheter : "
-- **Vendre** (orange) — pré-remplit "Vendre : "
-- **Craft** (bleu) — pré-remplit "Craft : "
-- **Banque** (violet) — pré-remplit "Banque : "
-- **Divers** (gris) — pas de préfixe
+### Clickable checklist
+- Each task has a checkbox, a timestamp, and a delete button
+- Check things off as you complete them
+- Dynamic row height for long notes (text wraps, no truncation)
+- No character limit on task text
 
-### Effacement facile
-- **Tout cocher** — coche toutes les tâches
-- **Tout décocher** — décoche toutes les tâches
-- **Effacer cochés** — supprime toutes les tâches cochées
+### Quick-add presets
+- Five preset buttons: Buy, Sell, Craft, Bank, Misc
+- Color-coded categories (green, orange, blue, purple, grey)
+- Auto-sized buttons that adapt to translated text length
 
-### Auto-save sur changement
-- Sauvegarde à chaque action : ajout, coche, décoche, suppression, changement taille/font
-- Indicateur visuel "Sauvegardé ✓" après chaque action
-- Sauvegarde aussi au logout
+### Auto-save
+- Every change is saved instantly with visual confirmation ("Saved ✓")
+- Notes persist across logouts and reloads via SavedVariables
+- Saved on window close and on logout
 
-### Réglage de la fonte
-- Slider de 10 à 22px dans la barre du haut
-- S'applique à l'input et à toutes les lignes de la liste
+### Adjustable font size
+- Increase or decrease text size (10–22px) with + and − buttons
 
-### Auto-open en capitale
-- S'ouvre automatiquement à l'arrivée ou la connexion dans une capitale
-- **Capitale amie** : mode discreet (max 420×340), focus sur l'input
-- **Capitale ennemie** : mode extra discreet (max 280×220, alpha 0.6, pas de focus volé)
-- Une seule fois par visite (flag reset en quittant la capitale)
-- Message dans le chat à l'entrée : "X tâche(s) en attente" ou "Rien d'urgent 😊"
+### Resizable & draggable
+- Position and size the window however you like
+- State saved between sessions (size, position, alpha)
 
-### Icône minimap
-- Clic = ouvrir/fermer la checklist
-- Drag = déplacer autour de la minimap
-- **Badge rouge** avec le nombre de tâches non cochées
-- Tooltip avec compteur et instructions
+### Minimap button
+- Click to toggle the checklist
+- Draggable around the minimap
+- Badge showing the number of pending tasks
+- Tooltip with task count and instructions
+
+### Multilingual (EN / FR / DE / IT / ES)
+- Auto-detects client language via `GetLocale()`
+- Manual language selector in the title bar (cycle: EN → FR → DE → IT → ES)
+- Language choice saved in SavedVariables
+
+## Installation
+
+1. Download the latest release zip
+2. Extract the `NarcoTips/` folder into your `Interface/AddOns/` directory
+3. Launch the game
+4. Enable in Esc → AddOns
 
 ## Structure
 
 ```
 NarcoTips/
-├── NarcoTips.toc    # Metadata (Interface: 16001)
-├── Init.lua          # Namespace, saved vars, presets, capital detection
-├── Core.lua          # Events: ADDON_LOADED, zone change, auto-open logic
-├── Notepad.lua       # Checklist UI: rows, presets, font slider, auto-save
-└── Minimap.lua       # Minimap button + badge
-```
-
-## Installation
-
-1. Copier `NarcoTips/` dans `<WoW Forever>/Interface/AddOns/`
-2. Relancer le jeu
-3. Activer dans Échap → AddOns
-
-## Format des données
-
-```lua
-NarcoTipsDB = {
-    notes = {
-        {text = "potions de soin", checked = false, time = "2026-11-11 23:14", preset = "buy"},
-        {text = "soie en excès", checked = true,  time = "2026-11-11 22:30", preset = "sell"},
-        ...
-    },
-    fontSize = 14,
-    windowWidth = 360,
-    windowHeight = 320,
-    ...
-}
-```
-
-## Dev
-
-```bash
-for f in NarcoTips/*.lua; do luajit -bl "$f" /dev/null 2>&1 && echo "OK: $f" || echo "FAIL: $f"; done
+├── NarcoTips.toc       # Metadata (Interface: 16001)
+├── Init.lua             # Namespace, saved vars, localization, capital detection
+├── Core.lua             # Events: addon load, zone change, auto-open logic
+├── Notepad.lua          # Checklist UI: rows, presets, font buttons, language selector, auto-save
+├── Minimap.lua          # Minimap button + badge (LibDBIcon-1.0 layout)
+└── Locales/
+    ├── enUS.lua         # English (default fallback)
+    ├── frFR.lua         # French
+    ├── deDE.lua         # German
+    ├── itIT.lua         # Italian
+    └── esES.lua         # Spanish
 ```
 
 ## Capitales détectées
 
 | Faction | Capitales |
 |---------|-----------|
-| Alliance | Stormwind City, Ironforge, Darnassus |
-| Horde | Orgrimmar, Thunder Bluff, Undercity |
+| Alliance | Stormwind City / Hurlevent, Ironforge / Forgefer, Darnassus |
+| Horde | Orgrimmar, Thunder Bluff / Les Pitons du Tonnerre, Undercity / Fossoyeuse |
 
-## Notes
+## Dev
 
-- `## Interface: 16001` = WoW Forever 1.60.1
-- Les SavedVariables sont écrites sur disque au logout ; l'auto-save sur changement garde la table à jour en mémoire en permanence
-- Non testé en jeu — à valider sur le client WoW Forever
+```bash
+# Syntax check (LuaJIT)
+for f in NarcoTips/*.lua NarcoTips/Locales/*.lua; do luajit -bl "$f" /dev/null 2>&1 && echo "OK: $f" || echo "FAIL: $f"; done
+```
+
+## Links
+
+- **GitHub:** https://github.com/Vbxlab/narco-tips
+- **CurseForge:** (pending approval)
+- **WoW Forever version:** 1.60.1 (Interface: 16001)
+
+## Changelog
+
+### v1.4.1
+- Localization: EN / FR / DE / IT / ES
+- Auto-detect client language + manual selector
+- Auto-sized preset buttons for long translations
+
+### v1.3.0
+- New minimap icon (INV_Misc_Note_01)
+
+### v1.2.0
+- Auto-open no longer steals focus (movement keys not captured)
+
+### v1.1.0
+- Minimap button: LibDBIcon-1.0 standard layout
+- No auto-open in enemy capitals
+- Delayed check after loading screens (boat transitions)
+- Dynamic row height for long notes
+- Unlimited text length
+
+### v1.0.0
+- Initial release: checklist, presets, timestamps, auto-save, font sizing, minimap button
