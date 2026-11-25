@@ -79,13 +79,6 @@ NarcoTips/
 | Alliance | Stormwind City / Hurlevent, Ironforge / Forgefer, Darnassus |
 | Horde | Orgrimmar, Thunder Bluff / Les Pitons du Tonnerre, Undercity / Fossoyeuse |
 
-## Dev
-
-```bash
-# Syntax check (LuaJIT)
-for f in NarcoTips/*.lua NarcoTips/Locales/*.lua; do luajit -bl "$f" /dev/null 2>&1 && echo "OK: $f" || echo "FAIL: $f"; done
-```
-
 ## Links
 
 - **GitHub:** https://github.com/Vbxlab/narco-tips
