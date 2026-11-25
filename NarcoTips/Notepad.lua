@@ -84,14 +84,21 @@ function NarcoTips:InitNotepad()
     presetBar:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -28)
 
     local presetBtns = {}
-    local px = 0
+    local presetOrder = {}
+    local prevBtn = nil
     for _, presetKey in ipairs(self.presetKeys) do
         local btn = CreateFrame("Button", nil, presetBar, "UIPanelButtonTemplate")
-        btn:SetSize(52, 20)
-        btn:SetPoint("LEFT", presetBar, "LEFT", px, 0)
+        btn:SetHeight(20)
         btn:SetText(self:T(presetKey))
+        -- Auto-size width based on text
+        local textWidth = btn:GetTextWidth() or 30
+        btn:SetWidth(math.max(textWidth + 16, 44))
+        if prevBtn then
+            btn:SetPoint("LEFT", prevBtn, "RIGHT", 4, 0)
+        else
+            btn:SetPoint("LEFT", presetBar, "LEFT", 0, 0)
+        end
         btn:SetScript("OnClick", function()
-            -- Build preset prefix from locale
             local prefixKey = presetKey .. "Prefix"
             local prefix = self:T(prefixKey)
             input:SetText(prefix)
@@ -101,7 +108,8 @@ function NarcoTips:InitNotepad()
             input.pendingPreset = presetKey
         end)
         presetBtns[presetKey] = btn
-        px = px + 56
+        presetOrder[#presetOrder + 1] = btn
+        prevBtn = btn
     end
 
     -- Font size: - and + buttons
@@ -606,9 +614,21 @@ function NarcoTips:InitNotepad()
         btnCheckAll:SetText(self:T("checkAll"))
         btnUncheckAll:SetText(self:T("uncheckAll"))
         btnClearChecked:SetText(self:T("clearChecked"))
+        local prev = nil
         for _, presetKey in ipairs(self.presetKeys) do
             if presetBtns[presetKey] then
-                presetBtns[presetKey]:SetText(self:T(presetKey))
+                local btn = presetBtns[presetKey]
+                btn:SetText(self:T(presetKey))
+                -- Re-size and re-position after text change
+                local tw = btn:GetTextWidth() or 30
+                btn:SetWidth(math.max(tw + 16, 44))
+                btn:ClearAllPoints()
+                if prev then
+                    btn:SetPoint("LEFT", prev, "RIGHT", 4, 0)
+                else
+                    btn:SetPoint("LEFT", presetBar, "LEFT", 0, 0)
+                end
+                prev = btn
             end
         end
         self:RefreshList()
