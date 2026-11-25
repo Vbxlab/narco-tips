@@ -59,27 +59,6 @@ function NarcoTips:InitNotepad()
         end
     end
 
-    local function RefreshAllText()
-        titleText:SetText("|cFF9966FF" .. self:T("title") .. "|r")
-        langBtn:SetText(self:GetLanguageDisplay(self:GetCurrentLanguage()))
-        input.placeholder:SetText(self:T("placeholder"))
-        btnCheckAll:SetText(self:T("checkAll"))
-        btnUncheckAll:SetText(self:T("uncheckAll"))
-        btnClearChecked:SetText(self:T("clearChecked"))
-        -- Refresh preset buttons
-        for _, preset in ipairs(self.presetKeys) do
-            if presetBtns[preset] then
-                presetBtns[preset]:SetText(self:T(preset))
-            end
-        end
-        -- Refresh list
-        self:RefreshList()
-        -- Refresh minimap tooltip
-        if self.minimap then
-            -- tooltip updates on next hover
-        end
-    end
-
     langBtn:SetScript("OnClick", function()
         currentLangIndex = currentLangIndex + 1
         if currentLangIndex > #availableLangs then
@@ -88,7 +67,7 @@ function NarcoTips:InitNotepad()
         local newLang = availableLangs[currentLangIndex]
         self:SetLanguage(newLang)
         langBtn:SetText(self:GetLanguageDisplay(newLang))
-        RefreshAllText()
+        if NarcoTips.RefreshAllText then NarcoTips.RefreshAllText() end
     end)
 
     -- Item count badge in title
@@ -618,7 +597,22 @@ function NarcoTips:InitNotepad()
     end
 
     NarcoTips.notepad = frame
-    NarcoTips.RefreshAllText = RefreshAllText
+
+    -- Refresh all localized text (defined here, after all UI elements exist)
+    function NarcoTips:RefreshAllText()
+        titleText:SetText("|cFF9966FF" .. self:T("title") .. "|r")
+        langBtn:SetText(self:GetLanguageDisplay(self:GetCurrentLanguage()))
+        placeholder:SetText(self:T("placeholder"))
+        btnCheckAll:SetText(self:T("checkAll"))
+        btnUncheckAll:SetText(self:T("uncheckAll"))
+        btnClearChecked:SetText(self:T("clearChecked"))
+        for _, presetKey in ipairs(self.presetKeys) do
+            if presetBtns[presetKey] then
+                presetBtns[presetKey]:SetText(self:T(presetKey))
+            end
+        end
+        self:RefreshList()
+    end
 
     -- Initial refresh
     self:RefreshList()
