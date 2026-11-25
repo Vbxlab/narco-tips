@@ -551,7 +551,9 @@ function NarcoTips:InitNotepad()
         frame:Show()
         NarcoTips:RefreshList()
         NarcoTips:UpdateFontSize()
-        if enemy then
+        -- Auto-open (discreet) never steals focus — user is moving
+        -- Manual open (discreet=false) gives focus to input
+        if discreet then
             input:ClearFocus()
         else
             input:SetFocus()
