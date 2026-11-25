@@ -26,7 +26,7 @@ NarcoTips.minimap = nil
 NarcoTips.db = nil
 
 -- Capital cities mapped to their faction
--- Both English and French names (client may be in either language)
+-- All supported client languages (EN/FR/DE/IT/ES)
 NarcoTips.capitals = {
     -- English
     ["Stormwind City"]  = "Alliance",
@@ -36,10 +36,25 @@ NarcoTips.capitals = {
     ["Thunder Bluff"]   = "Horde",
     ["Undercity"]       = "Horde",
     -- French
-    ["Hurlevent"]       = "Alliance",
-    ["Forgefer"]        = "Alliance",
-    ["Les Pitons du Tonnerre"] = "Horde",
-    ["Fossoyeuse"]      = "Horde",
+    ["Hurlevent"]               = "Alliance",
+    ["Forgefer"]                = "Alliance",
+    ["Les Pitons du Tonnerre"]  = "Horde",
+    ["Fossoyeuse"]              = "Horde",
+    -- German
+    ["Sturmwind"]       = "Alliance",
+    ["Eisenschmiede"]   = "Alliance",
+    ["Donnerfels"]      = "Horde",
+    ["Unterstadt"]      = "Horde",
+    -- Italian
+    ["Roccavento"]      = "Alliance",
+    ["Forgiardente"]    = "Alliance",
+    ["Picco del Tuono"] = "Horde",
+    ["Sepulcra"]        = "Horde",
+    -- Spanish
+    ["Ventormenta"]     = "Alliance",
+    ["Forjaz"]          = "Alliance",
+    ["Cima del Trueno"] = "Horde",
+    ["Entrañas"]        = "Horde",
 }
 
 -- Presets configuration (keys reference locale strings)

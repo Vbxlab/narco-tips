@@ -72,12 +72,16 @@ NarcoTips/
     └── esES.lua         # Spanish
 ```
 
-## Capitales détectées
+## Detected Capitals
+
+All capital names are localized for EN, FR, DE, IT, and ES clients.
 
 | Faction | Capitales |
 |---------|-----------|
-| Alliance | Stormwind City / Hurlevent, Ironforge / Forgefer, Darnassus |
-| Horde | Orgrimmar, Thunder Bluff / Les Pitons du Tonnerre, Undercity / Fossoyeuse |
+| Alliance | Stormwind City, Ironforge, Darnassus |
+| Horde | Orgrimmar, Thunder Bluff, Undercity |
+
+Localized names: Hurlevent/Forgefer (FR), Sturmwind/Eisenschmiede (DE), Roccavento/Forgiardente (IT), Ventormenta/Forjaz (ES), etc.
 
 ## Links
 
