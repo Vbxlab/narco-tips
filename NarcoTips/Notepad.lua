@@ -77,6 +77,9 @@ function NarcoTips:InitNotepad()
     local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 2, 2)
 
+    -- Forward declare input so preset buttons can reference it
+    local input
+
     -- === Preset buttons bar ===
     local presetBar = CreateFrame("Frame", nil, frame)
     presetBar:SetHeight(24)
@@ -150,7 +153,7 @@ function NarcoTips:InitNotepad()
     end)
 
     -- === Input field (add new item) ===
-    local input = CreateFrame("EditBox", "NarcoTipsInput", frame)
+    input = CreateFrame("EditBox", "NarcoTipsInput", frame)
     input:SetHeight(24)
     input:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -56)
     input:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -8, -56)
