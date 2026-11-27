@@ -90,6 +90,9 @@ Localized names: Hurlevent/Forgefer (FR), Sturmwind/Eisenschmiede (DE), Roccaven
 
 ## Changelog
 
+### v1.4.3
+- Fix: crash on preset button click (input nil reference)
+
 ### v1.4.2
 - Capital names localized for DE/IT/ES clients (Sturmwind, Roccavento, Ventormenta, etc.)
 
